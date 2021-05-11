@@ -4,6 +4,12 @@
         aria-expanded="false" aria-label="Toggle digipodum nav"><i class="fas fa-bars    "></i></button>
     <div class="collapse navbar-collapse" id="mainmenu">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0 mx-auto ">
+        
+
+
+        {% if current_user.is_anonymous %}
+          <p class="lead text-white">welcome</p>
+        {% else %}
         <li class="nav-item ">
           <a class="nav-link text-uppercase" href="{{url_for('index')}}"><i class="fas fa-home "></i> Home <span class="sr-only">(current)</span></a>
         </li>
@@ -13,17 +19,6 @@
         <li class="nav-item">
           <a class="nav-link text-uppercase" href="/upload"><i class="fas fa-arrow-circle-right    "></i> upload resumes</a>
         </li>
-
-
-        {% if current_user.is_anonymous %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user-circle    "></i> Account</a>
-          <div class="dropdown-menu" aria-labelledby="dropdownId">
-            <a class="dropdown-item" href="/login">Login</a>
-            <a class="dropdown-item" href="/register">Create free account</a>
-          </div>
-        </li>
-        {% else %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img src="{{ current_user.avatar(24) }}" class="rounded-circle">  {{current_user.username}}

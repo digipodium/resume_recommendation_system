@@ -19,9 +19,7 @@
   html,body {
     height: 100%;
   }
-  body{
-    text-align: center!important;
-  }
+
   
   main {
     display: flex;
@@ -29,11 +27,14 @@
     padding-top: 40px;
     padding-bottom: 40px;
     background-color: #e4e8ec;
+    box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 10%);
+    border: 1px solid rgb(0 0 0 / 10%);
+    border-radius: 3px;
   }
   
   .form-signin {
     width: 100%;
-    max-width: 330px;
+    max-width: 350px;
     padding: 15px;
     margin: auto;
   }
@@ -75,12 +76,12 @@
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
     
     <div class="form-floating">
-      <input type="username" name="username" class="form-control" id="floatingInput" placeholder="name@example.com">
       <label for="floatingInput">username</label>
+      <input type="username" name="username" class="form-control" id="floatingInput" placeholder="name@example.com">
     </div>
     <div class="form-floating">
-      <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
       <label for="floatingPassword">Password</label>
+      <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
     </div>
     
     

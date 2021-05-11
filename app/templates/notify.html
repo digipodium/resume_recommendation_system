@@ -1,0 +1,28 @@
+
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" >
+{% for category, message in messages %}
+<div style="position:fixed; bottom:5%; right: 5%;">
+  {% if category == 'message' %}
+  <div class="toast show bg-warning align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" data-autohide="false" aria-atomic="true">
+  {% else %}
+  <div class="toast show bg-{{category}} align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" data-autohide="false" aria-atomic="true">
+  {% endif %}
+  <div class="toast-header">
+  <strong class="me-auto">Notification</strong>
+  <small>now</small>
+  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
+  <div class="toast-body">
+  {{ message }}
+  </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+  

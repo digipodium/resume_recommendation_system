@@ -106,7 +106,7 @@ def input_page():
         title = request.form.get('title')
         category = request.form.get('category')
         if msg: # not none
-            if len(msg) >= 150 and len(title)>=64: # just some validation
+            if len(msg) >= 150 and len(title) < 4: # just some validation
                 msgObj = JobDescription(details=msg,title=title,category=category)   # add data to model object
                 db.session.add(msgObj)              # save data in database
                 db.session.commit()                 # update database

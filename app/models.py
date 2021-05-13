@@ -42,14 +42,16 @@ class MyUpload(db.Model):
         return self.img
 
 
-class MessageData(db.Model):
+class JobDescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String)
-    prediction = db.Column(db.Integer, nullable=True)
+    details = db.Column(db.String)
+    title = db.Column(db.Integer, nullable=True)
+    category = db.Column(db.String(50))
     created_on = db.Column(db.DateTime, index=True, default=datetime.now)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     def __repr__(self):
-        return self.message
+        return f'{self.title} ({self.category})'
 
 
 class Info(db.Model):

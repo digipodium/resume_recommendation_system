@@ -1,7 +1,7 @@
 from flask import render_template,redirect,request,flash,session,url_for
 from flask_login import logout_user,current_user, login_user, login_required
 from app import app,db
-from app.models import User, MessageData, MyUpload, Info
+from app.models import User, JobDescription, MyUpload, Info
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
@@ -103,18 +103,24 @@ def edit_profile():
 def input_page():
     if request.method =='POST':
         msg = request.form.get('msg')
+        title = request.form.get('title')
+        category = request.form.get('category')
         if msg: # not none
-            if len(msg) >= 10: # just some validation
-                msgObj = MessageData(message=msg)   # add data to model object
+            if len(msg) >= 150 and len(title)>=64: # just some validation
+                msgObj = JobDescription(details=msg,title=title,category=category)   # add data to model object
                 db.session.add(msgObj)              # save data in database
                 db.session.commit()                 # update database
                 # prediction logic
-                flash('we have saved ur data, prediction result will be available shortly','success')
+                flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
             else:
-                flash('message smaller than 10 characters cannot be predicted','danger')
+                flash('description smaller than 150 characters cannot be allowed','danger')
         else:
-            flash('message not provided, please fill in some data to predict')
-    return render_template('input.html',title="Input data")
+            flash('please fill the job description, the data in the box is just placeholder')
+    if os.path.exists('app/sample_job_description.txt'):
+        ptext=  open('app/sample_job_description.txt').read()
+    else:
+        ptext=""
+    return render_template('input.html',title="Job Description",pholder=ptext)
 
 
 def allowed_files(filename):

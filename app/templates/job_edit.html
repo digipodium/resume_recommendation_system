@@ -14,7 +14,7 @@
         background-position-x:left;
         background-position-y: center;
         background-size: contain;
-        background-color: rgb(61, 97, 163);
+        background-color: rgb(66, 71, 80);
     }
     textarea::placeholder,textarea::-webkit-input-placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
         color: rgb(167, 211, 238) !important;
@@ -28,23 +28,24 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-xs-12 col-lg-4">
+        <div class="col-xs-12 col-lg-4 my-5">
             {% include "notify.html" %}
            </div>
         <div class="equal col-lg-8 col-sm-12 mx-auto my-5">
             <div class="card shadow-lg">
                 <div class="card-header">
-                    <p class="lead">Enter job description, this data will be used by the AI system to recommend resume and cv of candidates</p>
+                    <h3>Edit Job</h3>
+                    <p class="lead">update job description, this data will be used by the AI system to recommend resume and cv of candidates</p>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         <div class="form-group">
                             <label for="title">Job Title</label>
-                            <input type="text" name="title" id="title" class="form-control" placeholder="title" aria-describedby="helpTitle">
+                            <input type="text" name="title" id="title" class="form-control" placeholder="title" aria-describedby="helpTitle" value="{{job.title}}">
                             <small id="helpTitle" class="text-muted">Enter a job title for easier posting</small>
                         </div>
                         <div class="form-group">
-                            <label for="category">Select a Job Category</label>
+                            <label for="category">Select a new Job Category (<span class="badge badge-pill badge-light">{{job.category}}</span>)</label>
                             <select class="form-control" name="category" id="category">
                                 <option>Civil</option>
                                 <option>IT</option>
@@ -53,7 +54,7 @@
                         </div>
                         <div class="form-group">
                             <label for="msg">Enter content in the area below</label>
-                            <textarea class="form-control" name="msg" id="msg" rows="10" placeholder="{{pholder}}"></textarea>
+                            <textarea class="form-control" name="msg" id="msg" rows="10" placeholder="{{pholder}}">{{job.details}}</textarea>
                         </div>
                         <button class="btn btn-primary btn-sm btn-block" >Submit</button>
                     </form>

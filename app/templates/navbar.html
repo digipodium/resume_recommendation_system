@@ -8,20 +8,24 @@
 
 
         {% if current_user.is_anonymous %}
-          <p class="lead text-white">welcome</p>
+          <p class="lead text-white"></p>
         {% else %}
         <li class="nav-item ">
-          <a class="nav-link text-uppercase" href="{{url_for('index')}}"><i class="fas fa-home "></i> Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link text-uppercase" href="{{url_for('index')}}"><i class="fas fa-home "></i> View Jobs <span class="sr-only">(current)</span></a>
+        </li>
+        
+        {% if 'admin' in current_user.username %}
+        <li class="nav-item">
+          <a class="nav-link text-uppercase" href="/input"><i class="fas fa-briefcase"></i> Add job Posting </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-uppercase" href="/input"><i class="fas fa-arrow-circle-down    "></i> add job description </a>
+          <a class="nav-link text-uppercase" href="#"><i class="fas fa-cloud-upload-alt    "></i> View uploads</a>
         </li>
+        {% else %}
         <li class="nav-item">
-          <a class="nav-link text-uppercase" href="/upload"><i class="fas fa-arrow-circle-right    "></i> upload resumes</a>
+          <a class="nav-link text-uppercase" href="/upload"><i class="fas fa-upload    "></i> Upload resumes</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link text-uppercase" href="#"><i class="fas fa-arrow-circle-right    "></i> view uploads</a>
-        </li>
+        {% endif %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img src="{{ current_user.avatar(24) }}" class="rounded-circle">  {{current_user.username}}

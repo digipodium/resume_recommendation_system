@@ -10,7 +10,83 @@ import os
 @app.route('/index')
 @login_required
 def index():
-    return render_template('index.html',title='home')
+    jobs = JobDescription.query.all()
+    return render_template('index.html',title='home',jobs=jobs)
+
+@app.route('/input',methods=['GET','POST'])
+def input_page():
+    if request.method =='POST':
+        
+        msg = request.form.get('msg')
+        title = request.form.get('title')
+        category = request.form.get('category')
+        print(len(msg),len(title),len(category),msg,title,category)
+        if msg: # not none
+            if len(msg) >= 150 and len(title) > 4: # just some validation
+                msgObj = JobDescription(details=msg,title=title,category=category)   # add data to model object
+                db.session.add(msgObj)              # save data in database
+                db.session.commit()                 # update database
+                # prediction logic
+                flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
+            else:
+                flash('description smaller than 150 characters cannot be allowed','danger')
+        else:
+            flash('please fill the job description, the data in the box is just placeholder')
+    if os.path.exists('app/sample_job_description.txt'):
+        ptext=  open('app/sample_job_description.txt').read()
+    else:
+        ptext=""
+    return render_template('input.html',title="Job Description",pholder=ptext)
+
+
+@app.route('/job/<jobid>')
+@login_required
+def view_job(jobid):
+    job = JobDescription.query.get(jobid)
+    if job is None:
+        return redirect(url_for('index'))
+    return render_template('job_detail.html',title='home',job=job)
+
+@app.route('/job/edit/<jobid>',methods=['GET', 'POST'])
+@login_required
+def edit_job(jobid):
+    job = JobDescription.query.get(jobid)
+    if job is None:
+        return redirect(url_for('index'))
+    if request.method =='POST':
+    
+        msg = request.form.get('msg')
+        title = request.form.get('title')
+        category = request.form.get('category')
+        print(len(msg),len(title),len(category),msg,title,category)
+        if msg: # not none
+            if len(msg) >= 150 and len(title) > 4: # just some validation
+                job.title= title  # add data to model object
+                job.category= category  # add data to model object
+                job.details= msg  # add data to model object
+                db.session.commit()                 # update database
+                # prediction logic
+                flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
+            else:
+                flash('description smaller than 150 characters cannot be allowed','danger')
+        else:
+            flash('please fill the job description, the data in the box is just placeholder')
+    if os.path.exists('app/sample_job_description.txt'):
+        ptext=  open('app/sample_job_description.txt').read()
+    else:
+        ptext=""
+    return render_template('job_edit.html',title='edit job',pholder=ptext,job=job)
+    
+@app.route('/job/delete/<jobid>')
+@login_required
+def delete_job(jobid):
+    try:
+        JobDescription.query.filter(JobDescription.id==jobid).delete()
+        db.session.commit()
+        flash('Job delete successfully','info')
+    except:
+        flash('Job not found','danger')
+    return redirect(url_for('index'))
 
 @app.route('/login',methods=['GET', 'POST'])
 def login():
@@ -24,6 +100,8 @@ def login():
                 return redirect(url_for('login'))
             login_user(user, remember=True)
             return redirect(url_for('index'))
+        else:
+            flash('fill your credentials to login','danger')
     return render_template('login.html', title='Sign In')
 
     
@@ -99,35 +177,15 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile',user=user)
 
 
-@app.route('/input',methods=['GET','POST'])
-def input_page():
-    if request.method =='POST':
-        msg = request.form.get('msg')
-        title = request.form.get('title')
-        category = request.form.get('category')
-        if msg: # not none
-            if len(msg) >= 150 and len(title) < 4: # just some validation
-                msgObj = JobDescription(details=msg,title=title,category=category)   # add data to model object
-                db.session.add(msgObj)              # save data in database
-                db.session.commit()                 # update database
-                # prediction logic
-                flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
-            else:
-                flash('description smaller than 150 characters cannot be allowed','danger')
-        else:
-            flash('please fill the job description, the data in the box is just placeholder')
-    if os.path.exists('app/sample_job_description.txt'):
-        ptext=  open('app/sample_job_description.txt').read()
-    else:
-        ptext=""
-    return render_template('input.html',title="Job Description",pholder=ptext)
+
 
 
 def allowed_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+@login_required
 @app.route('/upload', methods=['GET','POST'])
-def uploadImage():
+def uploadResume():
     if request.method == 'POST':
         print(request.files)
         if 'file' not in request.files:

@@ -17,3 +17,4 @@ flask run
 ```
 
 
+flask db upgrade

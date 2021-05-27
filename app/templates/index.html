@@ -65,6 +65,8 @@
         <div class="col-lg-8 h-100">
             <div class="container-fluid">
                 <div class="row">
+                    
+                    {% if jobs %}
                     {% for job in jobs %}
                     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-6 my-2">
                         <div class="card mx-1 my-1 shadow-lg">
@@ -86,6 +88,28 @@
                         </div>
                     </div>
                     {% endfor %}
+                    {% else %}
+                        <div class="col">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col mt-3">
+                                        <div class="jumbotron jumbotron-fluid bg-white">
+                                            <div class="container">
+                                                
+                                                <p class="lead">No Jobs Available right now</p>
+                                                <hr class="my-2">
+                                               
+                                                <p class="lead">
+                                                    <a class="btn btn-primary btn-lg" href="Jumbo action link" role="button">Contact us</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>    
+                    {% endif %}
+                    
                 </div>
             </div>
         </div>
@@ -96,9 +120,9 @@
                         <div class="card ">
                             <div class="card-body bg-primary">
                                 {% if 'admin' in current_user.username %}
-                                    <h4 class="card-title text-center text-warning">You are an Administrator</h4>
+                                <h4 class="card-title text-center text-warning">You are an Administrator</h4>
                                 {% else %}
-                                    <h4 class="card-title text-center text-white">You are a User</h4>
+                                <h4 class="card-title text-center text-white">You are a User</h4>
                                 {% endif %}
                             </div>
                             <ul class="list-group list-group-flush">

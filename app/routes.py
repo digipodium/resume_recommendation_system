@@ -183,8 +183,9 @@ def edit_profile():
 def allowed_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-@login_required
+
 @app.route('/upload', methods=['GET','POST'])
+@login_required
 def uploadResume():
     if request.method == 'POST':
         print(request.files)
@@ -199,7 +200,7 @@ def uploadResume():
             print(file.filename)
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename ))
-            upload = MyUpload(img =f"/static/uploads/{filename}", imgtype = os.path.splitext(file.filename)[1],user_id=current_user.id)
+            upload = MyUpload(file = filename,path =f"/static/uploads/{filename}", extension = os.path.splitext(file.filename)[1],user_id=current_user.id)
             db.session.add(upload)
             db.session.commit()
             flash('file uploaded and saved','success')
@@ -208,9 +209,26 @@ def uploadResume():
         else:
             flash('wrong file selected, only PNG and JPG images allowed','danger')
             return redirect(request.url)
-   
-    return render_template('upload.html',title='upload new Image')
+    uploads = MyUpload.query.filter(MyUpload.user_id==current_user.id)
+    
+    return render_template('upload.html',title='upload resume',resumes=uploads)
 
-@app.route('/hello')
-def helloworld():
-    return render_template('helloworld.html')
+@app.route('/resume/delete/<id>')
+@login_required
+def delete_resume(id):
+    try:
+        upload=MyUpload.query.get(id)
+        os.unlink(os.path.join('app','static','uploads',upload.file))
+        MyUpload.query.filter(MyUpload.id==id).delete()
+        db.session.commit()
+        flash('Resume delete successfully','success')
+    except Exception as e:
+        flash(f'Resume not found {e}','danger')
+    return redirect(url_for('uploadResume'))
+
+@app.route('/resume/view/<id>')
+@login_required
+def view_resume(id):
+    upload = MyUpload.query.get(id)
+    return render_template('view.html',upload=upload)
+

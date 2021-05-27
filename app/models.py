@@ -33,13 +33,14 @@ def load_user(id):
 
 class MyUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    img = db.Column(db.String(255))
-    imgtype = db.Column(db.String(4))
+    file = db.Column(db.String(255))
+    path = db.Column(db.String(255))
+    extension = db.Column(db.String(4))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_on = db.Column(db.DateTime, index=True, default=datetime.now)
 
     def __repr__(self):
-        return self.img
+        return self.path
 
 
 class JobDescription(db.Model):

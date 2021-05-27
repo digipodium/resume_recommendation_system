@@ -67,23 +67,22 @@
             <div class="container-fluid">
                 <div class="row">
                     
-                    {% if jobs %}
-                    {% for job in jobs %}
+                    {% if contacts %}
+                    {% for job in contacts %}
                     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-6 my-2">
                         <div class="card mx-1 my-1 shadow-lg">
                             <div class="card-body">
-                                <h5 class="card-title">{{job.title|title}}</h5>
-                                <span class="badge badge-pill badge-info px-3">{{job.category}}</span>
+                                <h5 class="card-title">from : {{job.name|title}}</h5>
+                               
                                 <span class="badge badge-pill badge-warning px-3"><i class="fas fa-clock text-dark   "></i> {{job.created_on.day}}/{{job.created_on.month}}/{{job.created_on.year}}</span>
                                 <hr>
-                                <p class="card-text">{{job.details|truncate(240)}} <a href="{{url_for('view_job',jobid=job.id)}}">view more</a></p>
+                                <p class="card-text">{{job.message}}</p>
                             </div>
                             <div class="card-footer">
                                 {% if 'admin' in current_user.username %}
-                                <a class="card-button btn btn-info btn-sm " href="{{url_for('edit_job',jobid=job.id)}}"> <i class="fas fa-pen-fancy    "></i> edit job posting</a>
-                                <a class="card-button btn btn-danger btn-sm" href="{{url_for('delete_job',jobid=job.id)}}"> <i class="fas fa-trash    "></i> delete job posting</a>
-                                {% else %}
-                                <a class="card-button btn btn-success w-100" href="{{url_for('recommend',jobid=job.id)}}">Check AI recommendation</a>
+
+                                <a class="card-button btn btn-danger btn-sm" href="{{url_for('delete_contact',id=job.id)}}"> <i class="fas fa-trash    "></i> delete job posting</a>
+                              
                                 {% endif %}
                             </div>
                         </div>
@@ -97,12 +96,10 @@
                                         <div class="jumbotron jumbotron-fluid bg-white">
                                             <div class="container">
                                                 
-                                                <p class="lead">No Jobs Available right now</p>
+                                                <p class="lead">No Contant messages now</p>
                                                 <hr class="my-2">
                                                
-                                                <p class="lead">
-                                                    <a class="btn btn-primary btn-lg" href="{{ url_for('contact') }}" role="button">Contact us</a>
-                                                </p>
+                                               
                                             </div>
                                         </div>
                                     </div>
@@ -131,11 +128,6 @@
                                 <li class="list-group-item bg-primary">
                                     <a class="btn btn-primary button w-100" href="/input">
                                         <i class="fas fa-briefcase    "></i> Add New Jobs 
-                                    </a>
-                                </li>
-                                <li class="list-group-item bg-success">
-                                    <a class="btn btn-success button w-100" href="{{url_for('view_all_contacts')}}">
-                                        <i class="fas fa-briefcase    "></i> View Contact Messages 
                                     </a>
                                 </li>
                                 {% else %}

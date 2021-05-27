@@ -67,23 +67,23 @@
             <div class="container-fluid">
                 <div class="row">
                     
-                    {% if jobs %}
-                    {% for job in jobs %}
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-xs-6 my-2">
+                    {% if resumes %}
+                    <div class="col-12">
+                        <h1>View All Resume / CV</h1>
+                    </div>
+                    {% for resume in resumes %}
+                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 my-2">
                         <div class="card mx-1 my-1 shadow-lg">
                             <div class="card-body">
-                                <h5 class="card-title">{{job.title|title}}</h5>
-                                <span class="badge badge-pill badge-info px-3">{{job.category}}</span>
-                                <span class="badge badge-pill badge-warning px-3"><i class="fas fa-clock text-dark   "></i> {{job.created_on.day}}/{{job.created_on.month}}/{{job.created_on.year}}</span>
-                                <hr>
-                                <p class="card-text">{{job.details|truncate(240)}} <a href="{{url_for('view_job',jobid=job.id)}}">view more</a></p>
+                                <h5 class="card-title">{{resume.file|title}}</h5>
+                                <p><i class="fas fa-calendar-alt"></i>  {{resume.created_on.date()}}</p>
+                                <p><i class="fas fa-clock    "></i>  {{resume.created_on.time()}}</p>
+                                
                             </div>
                             <div class="card-footer">
                                 {% if 'admin' in current_user.username %}
-                                <a class="card-button btn btn-info btn-sm " href="{{url_for('edit_job',jobid=job.id)}}"> <i class="fas fa-pen-fancy    "></i> edit job posting</a>
-                                <a class="card-button btn btn-danger btn-sm" href="{{url_for('delete_job',jobid=job.id)}}"> <i class="fas fa-trash    "></i> delete job posting</a>
-                                {% else %}
-                                <a class="card-button btn btn-success w-100" href="{{url_for('recommend',jobid=job.id)}}">Check AI recommendation</a>
+                                <a class="d-inline btn btn-success btn-sm" href="{{url_for('view_resume',id=resume.id)}}"><i class="fas fa-eye"> </i>view</a>
+                                <a class="d-inline btn btn-danger btn-sm " href="{{url_for('delete_resume',id=resume.id)}}"><i class="fas fa-trash"> </i>delete</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -97,12 +97,10 @@
                                         <div class="jumbotron jumbotron-fluid bg-white">
                                             <div class="container">
                                                 
-                                                <p class="lead">No Jobs Available right now</p>
+                                                <p class="lead">No Resume/CV Available right now</p>
                                                 <hr class="my-2">
                                                
-                                                <p class="lead">
-                                                    <a class="btn btn-primary btn-lg" href="{{ url_for('contact') }}" role="button">Contact us</a>
-                                                </p>
+                                            
                                             </div>
                                         </div>
                                     </div>

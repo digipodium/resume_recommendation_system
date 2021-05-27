@@ -48,6 +48,7 @@ class JobDescription(db.Model):
     details = db.Column(db.String)
     title = db.Column(db.Integer, nullable=True)
     category = db.Column(db.String(50))
+    keywords = db.Column(db.String(255))
     created_on = db.Column(db.DateTime, index=True, default=datetime.now)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     
@@ -64,4 +65,15 @@ class Info(db.Model):
 
     def __repr__(self):
         return self.name
+
+class Contact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    email = db.Column(db.String(32))
+    message = db.Column(db.String(255))
+    created_on = db.Column(db.DateTime, index=True, default=datetime.now)
+    def __repr__(self):
+        return f'{self.name} message'
+
+
 

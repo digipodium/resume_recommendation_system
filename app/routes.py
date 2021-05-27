@@ -1,10 +1,15 @@
 from flask import render_template,redirect,request,flash,session,url_for
 from flask_login import logout_user,current_user, login_user, login_required
 from app import app,db
-from app.models import User, JobDescription, MyUpload, Info
+from app.models import User, JobDescription, MyUpload, Info, Contact
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
+
+from app.pdf2text import extract_text_from_pdf
+from app.doctotext import extract_text_from_docx
+
+from app.entity_recognizer import extract_skills
 
 @app.route('/')
 @app.route('/index')
@@ -13,6 +18,11 @@ def index():
     jobs = JobDescription.query.all()
     return render_template('index.html',title='home',jobs=jobs)
 
+
+##########################################################
+#########################JOBS#############################
+##########################################################
+
 @app.route('/input',methods=['GET','POST'])
 def input_page():
     if request.method =='POST':
@@ -20,14 +30,16 @@ def input_page():
         msg = request.form.get('msg')
         title = request.form.get('title')
         category = request.form.get('category')
-        print(len(msg),len(title),len(category),msg,title,category)
-        if msg: # not none
+        keywords = request.form.get('keywords')
+
+        if msg and keywords: # not none
+            keywords = [word.strip().lower() for word in keywords.split(',')]
             if len(msg) >= 150 and len(title) > 4: # just some validation
-                msgObj = JobDescription(details=msg,title=title,category=category)   # add data to model object
+                msgObj = JobDescription(details=msg,title=title,keywords=str(keywords),category=category)   # add data to model object
                 db.session.add(msgObj)              # save data in database
                 db.session.commit()                 # update database
-                # prediction logic
                 flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
+                return redirect(url_for('input_page'))
             else:
                 flash('description smaller than 150 characters cannot be allowed','danger')
         else:
@@ -45,7 +57,8 @@ def view_job(jobid):
     job = JobDescription.query.get(jobid)
     if job is None:
         return redirect(url_for('index'))
-    return render_template('job_detail.html',title='home',job=job)
+    keywords = [word.replace("'","") for word in job.keywords[1:-1].split(',')]
+    return render_template('job_detail.html',title='home',job=job,keywords=keywords)
 
 @app.route('/job/edit/<jobid>',methods=['GET', 'POST'])
 @login_required
@@ -53,20 +66,26 @@ def edit_job(jobid):
     job = JobDescription.query.get(jobid)
     if job is None:
         return redirect(url_for('index'))
+    
     if request.method =='POST':
     
         msg = request.form.get('msg')
         title = request.form.get('title')
         category = request.form.get('category')
-        print(len(msg),len(title),len(category),msg,title,category)
-        if msg: # not none
+        keywords = request.form.get('keywords')
+
+        if msg and keywords: # not none
+            keywords = [word.strip().lower() for word in keywords.split(',')]
             if len(msg) >= 150 and len(title) > 4: # just some validation
-                job.title= title  # add data to model object
-                job.category= category  # add data to model object
-                job.details= msg  # add data to model object
+                job = JobDescription.query.get(jobid)
+                job.details=msg
+                job.title=title
+                job.keywords=str(keywords)
+                job.category=category   # add data to model object
                 db.session.commit()                 # update database
                 # prediction logic
-                flash('we have saved the job description detail, please visit the dashboard to view the job card','success')
+                flash('we have saved the job description','success')
+                return redirect(f'/job/{jobid}')
             else:
                 flash('description smaller than 150 characters cannot be allowed','danger')
         else:
@@ -75,7 +94,8 @@ def edit_job(jobid):
         ptext=  open('app/sample_job_description.txt').read()
     else:
         ptext=""
-    return render_template('job_edit.html',title='edit job',pholder=ptext,job=job)
+    keywords = [word.replace("'","") for word in job.keywords[1:-1].split(',')]
+    return render_template('job_edit.html',title='edit job',pholder=ptext,job=job,keywords=keywords)
     
 @app.route('/job/delete/<jobid>')
 @login_required
@@ -87,6 +107,10 @@ def delete_job(jobid):
     except:
         flash('Job not found','danger')
     return redirect(url_for('index'))
+
+###################################################################
+#######################AUTHENTICATION##############################
+###################################################################
 
 @app.route('/login',methods=['GET', 'POST'])
 def login():
@@ -177,8 +201,9 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile',user=user)
 
 
-
-
+##########################################################
+###################UPLOADING##############################
+##########################################################
 
 def allowed_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -232,3 +257,72 @@ def view_resume(id):
     upload = MyUpload.query.get(id)
     return render_template('view.html',upload=upload)
 
+@app.route('/resume/admin')
+@login_required
+def view_all_resume():
+    uploads =MyUpload.query.all()
+    return render_template('view_all_uploads.html',resumes=uploads)
+
+######################################################
+#####################CONTACTS#########################
+######################################################
+
+@app.route('/contact', methods=['GET','POST'])
+def contact():
+    if request.method=='POST':
+        email = request.form.get('email')
+        name = request.form.get('name')
+        message = request.form.get('message')
+        if name and message and email:
+            msgObj = Contact(name=name,email=email,message=message)   # add data to model object
+            db.session.add(msgObj)              # save data in database
+            db.session.commit()                 # update database
+            flash('we have recieved your message, we will respond ASAP','success')
+            return redirect(url_for('index'))
+        else:
+            flash('your have some invalid entries, please fill correctly','danger')
+
+    return render_template('contact.html')
+
+@app.route('/contact/admin')
+@login_required
+def view_all_contacts():
+    contacts =Contact.query.all()
+    return render_template('view_all_contact.html',contacts=contacts)
+
+
+
+@app.route('/contact/delete/<id>')
+@login_required
+def delete_contact(id):
+    Contact.query.filter(Contact.id==id).delete()
+    db.session.commit()
+    flash('message deleted','success')
+    return redirect(url_for('view_all_contacts'))
+
+###################################################################
+##############################AI#####################################
+###################################################################
+
+
+@app.route('/recommend/<jobid>',methods=['GET','POST'])
+@login_required
+def recommend(jobid):
+    job = JobDescription.query.get(jobid)
+    resumes = MyUpload.query.filter(MyUpload.user_id==current_user.id)
+    if job is None:
+        return redirect(url_for('index'))
+    keywords = [word.replace("'","") for word in job.keywords[1:-1].split(',')]
+    if request.method == 'POST':
+        resume_id = request.form.get('resume_id')
+        print(resume_id)
+        selected_resume = MyUpload.query.get(id)
+        ext = os.path.splitext(selected_resume.file)[1]
+        if ext == 'pdf':
+            resume_text = extract_text_from_pdf(selected_resume.path)
+        if ext == 'doc':
+            resume_text = extract_text_from_docx(selected_resume.path)
+        skills = extract_skills(resume_text,keywords)
+        print(skills)
+
+    return render_template('recommend.html',title='home',job=job,keywords=keywords,resumes=resumes)

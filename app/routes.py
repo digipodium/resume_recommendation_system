@@ -1,3 +1,4 @@
+from logging import log
 from flask import render_template,redirect,request,flash,session,url_for
 from flask_login import logout_user,current_user, login_user, login_required
 from app import app,db
@@ -10,6 +11,12 @@ from app.pdf2text import extract_text_from_pdf
 from app.doctotext import extract_text_from_docx
 
 from app.entity_recognizer import extract_skills
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
 
 @app.route('/')
 @app.route('/index')
@@ -213,7 +220,7 @@ def allowed_files(filename):
 @login_required
 def uploadResume():
     if request.method == 'POST':
-        print(request.files)
+
         if 'file' not in request.files:
             flash('No file uploaded','danger')
             return redirect(request.url)
@@ -222,7 +229,7 @@ def uploadResume():
             flash('no file selected','danger')
             return redirect(request.url)
         if file and allowed_files(file.filename):
-            print(file.filename)
+            # print(file.filename)
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename ))
             upload = MyUpload(file = filename,path =f"/static/uploads/{filename}", extension = os.path.splitext(file.filename)[1],user_id=current_user.id)
@@ -301,28 +308,87 @@ def delete_contact(id):
     return redirect(url_for('view_all_contacts'))
 
 ###################################################################
-##############################AI#####################################
+##############################AI###################################
 ###################################################################
 
 
 @app.route('/recommend/<jobid>',methods=['GET','POST'])
 @login_required
 def recommend(jobid):
+    try:
+        session.pop('rePercent')
+        session.pop('msg')
+        session.pop('skillPercent')
+        session.pop('jobid')
+        session.pop('resumeid')
+    except:
+        pass
     job = JobDescription.query.get(jobid)
+    resume_text = None
     resumes = MyUpload.query.filter(MyUpload.user_id==current_user.id)
     if job is None:
         return redirect(url_for('index'))
     keywords = [word.replace("'","") for word in job.keywords[1:-1].split(',')]
     if request.method == 'POST':
         resume_id = request.form.get('resume_id')
-        print(resume_id)
-        selected_resume = MyUpload.query.get(id)
-        ext = os.path.splitext(selected_resume.file)[1]
-        if ext == 'pdf':
-            resume_text = extract_text_from_pdf(selected_resume.path)
-        if ext == 'doc':
-            resume_text = extract_text_from_docx(selected_resume.path)
-        skills = extract_skills(resume_text,keywords)
-        print(skills)
+        if resume_id:
+            selected_resume = MyUpload.query.get(resume_id)
+            ext = os.path.splitext(selected_resume.file)[1]
+            # print('ext',ext)
+            try:
+                if ext == '.pdf':
+                    resume_text = extract_text_from_pdf("app"+selected_resume.path)
+                elif ext == '.doc':
+                    resume_text = extract_text_from_docx("app"+selected_resume.path)
+                
+                data = [resume_text,job.details]
+                cv = CountVectorizer()
+                count_matrix = cv.fit_transform(data)
+                cosine_similarity(count_matrix)
+                matchPercentage = cosine_similarity(count_matrix)[0][1] * 100
+                recommendMatchPercentage = round(matchPercentage, 2)
+                recommend = "Your resume matches about <b>"+ str(recommendMatchPercentage)+ "%</b> of the job description."
+                session['rePercent'] = recommendMatchPercentage
+                session['msg'] = recommend
+
+                user_skills = extract_skills(resume_text,keywords)
+                if user_skills is not None:
+                    print(" ".join(keywords)," ".join(user_skills))
+                    keydata = [" ".join(keywords)," ".join(user_skills)]
+                    cv = CountVectorizer()
+                    count_matrix = cv.fit_transform(keydata)
+                    cosine_similarity(count_matrix)
+                    matchPercentage = cosine_similarity(count_matrix)[0][1] * 100
+                    skillsMatchPercentage = round(matchPercentage, 2)
+                    session['skillPercent'] =skillsMatchPercentage
+                session['jobid'] = jobid
+                session['resumeid'] = resume_id
+                flash("AI results generated successfully",'success')
+                return redirect(url_for('result_ai'))
+            except Exception as e:
+                 flash(f"some error occurred {e}",'danger')
+        else:
+            flash(f"No resume found, please upload resume/cv",'danger')
+
 
     return render_template('recommend.html',title='home',job=job,keywords=keywords,resumes=resumes)
+
+
+@app.route('/results')
+@login_required
+def result_ai():
+    if 'rePercent' in session:
+        rp =  session.get('rePercent')
+        msg = session.get('msg')
+        sp = session.get('skillPercent','N/A')
+        jid = session.get('jobid')
+        rid = session.get('resumeid')
+        resume = MyUpload.query.get(rid)
+        job = JobDescription.query.get(jid)
+        output = {
+            'rp':rp, 'msg':msg,'sp':sp, 'resume':resume,'job':job
+        }
+        return render_template('results.html',title='result',output=output)
+    else:
+        flash("select a job for recommender",'warning')
+    return redirect('index')

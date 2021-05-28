@@ -18,3 +18,7 @@ flask run
 
 
 flask db upgrade
+
+
+login - admin001
+password - admin

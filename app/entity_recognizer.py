@@ -3,10 +3,10 @@
 import nltk
 import re
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('maxent_ne_chunker')
+# nltk.download('words')
 
 
 PHONE_REG = re.compile(r'[\+\(]?[1-9][0-9 .\-\(\)]{8,}[0-9]')
@@ -51,6 +51,7 @@ def extract_emails(resume_text):
     return re.findall(EMAIL_REG, resume_text)
 
 def extract_skills(input_text,skills):
+
     stop_words = set(nltk.corpus.stopwords.words('english'))
     word_tokens = nltk.tokenize.word_tokenize(input_text)
 

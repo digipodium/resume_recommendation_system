@@ -6,3 +6,4 @@ pdfminer.six
 scikit-learn
 docx2txt
 nltk
+flask

@@ -239,7 +239,7 @@ def uploadResume():
             session['uploaded_file'] = f"/static/uploads/{filename}"
             return redirect(request.url)
         else:
-            flash('wrong file selected, only PNG and JPG images allowed','danger')
+            flash('wrong file selected, only DOC and PDF images allowed','danger')
             return redirect(request.url)
     uploads = MyUpload.query.filter(MyUpload.user_id==current_user.id)
     
